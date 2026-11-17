@@ -43,9 +43,11 @@ CNAME                 docs.creadev.org (the GitHub Pages custom domain)
 | Half | Source | Host | Domain | Build |
 |---|---|---|---|---|
 | Docs hub | `docs/` | GitHub Pages | `docs.creadev.org` | the freestruct docs lane (Jekyll, freestruct, pagefind, Pages upload) |
-| Portfolio | `web/` | Cloudflare Pages | `dhaupin.creadev.org` | CF Pages Git integration (root `web`, build `npm run build`, output `dist`) |
+| Portfolio | `web/` | Cloudflare Pages | `dhaupin.creadev.org` | CF Pages Git integration (root `web`, build `npm run build`, output `dist`, Node 22) |
 
 The repo is the GitHub user site (`dhaupin.github.io`), so the CNAME file keeps `docs.creadev.org` on the Pages build. The docs build runs from the family docs lane, which scopes to `docs/` and adds freestruct plus pagefind; the two hosts are independent (GitHub Pages reads `docs/`, Cloudflare Pages reads `web/`, and neither sees the other). See `labs/prd-creadev-docs.md` section 5.
+
+Because the Pages root directory is `web/`, the builder reads `web/.nvmrc` (Node 22) and `web/.npmrc` (`legacy-peer-deps=true`), not the repo root's. Both are family-model files; see `DEPLOY.md` section 2 for why.
 
 ## The family toolchain (consumed, never forked)
 

@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 2026-11-17 - the Cloudflare Pages first-build pass (root `web`, node/npm pins, the CSP)
+
+The Cloudflare Pages project's root directory is `web`, so the builder reads the config files inside `web/`, not the repo root's. Two files now ride there, plus a CSP correction, so the first build succeeds without a manual panel workaround.
+
+### Added
+
+- **`web/.nvmrc`** - pins Node `22` for the Pages build (version line first; a comments-first file is not something every builder parser survives). Satisfies vite 8 + prestruct's `^20.19 || >=22.12` floor.
+- **`.nvmrc`** (repo root) - Node `22`, for local tooling and CI.
+- **`web/.npmrc`** - `legacy-peer-deps=true`, the family's npm 10.x arborist guard (npm/cli#9787): the CF v3 image ships npm 10.9.9 and `vite` 8 declares an optional `@vitejs/devtools` peer, the crash shape vant hit on a Pages deploy of the same graph.
+
+### Changed
+
+- **`web/public/_headers`** - the CSP now allows the Cloudflare Insights beacon (`static.cloudflareinsights.com` script, `cloudflareinsights.com` connect), as every family `_headers` does, plus the GA4/Zaraz hosts the `prestruct/example` model names (`stats.g.doubleclick.net`, `www.googletagmanager.com`, `www.google.com`).
+- **`DEPLOY.md`** - section 2's Pages contract gains the Node 22 row and the `web/`-scoped config-file note.
+- **`AGENTS.md`** - the hosts table names Node 22 and the `web/`-scoped `.nvmrc`/`.npmrc`.
+
 ### 2026-11-17 - the portfolio half lands (P3: the shell, the five arms, the legal pair, the art)
 
 The `web/` portfolio (`dhaupin.creadev.org`) is built: a prestruct-prerendered React/Vite tree carrying the shell (nav, footer, theme), the five arms (work, play, world, contribute, contact), the legal pair (terms, privacy), a deterministically generated icon set and OG card, and the Cloudflare Pages config. It builds green locally: `8/8 pages rendered`, audit `0 failures, 0 warning(s)`. The Cloudflare Pages project wiring is the owner step that remains (see `labs/TASKS.md`).

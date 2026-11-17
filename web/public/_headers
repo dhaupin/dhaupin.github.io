@@ -6,15 +6,18 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   X-XSS-Protection: 0
 
-  # Cloudflare Pages security headers for the portfolio. Copied from the
-  # coreforge rig's web/public/_headers and tuned to this site's real asset
-  # sources:
-  # - script-src: 'self' + inline only (prerendered pages carry the inline
-  #   theme bootstrap and JSON-LD); no third-party script host.
-  # - connect-src: adds the GA4 collection hosts, because analytics ride Google
-  #   Analytics 4 by way of Cloudflare Zaraz (see /privacy).
+  # Cloudflare Pages security headers for the portfolio. The coreforge rig's
+  # shape, tuned to this site's real asset sources:
+  # - script-src: 'self' + inline (the prerendered pages carry the inline
+  #   theme bootstrap and JSON-LD) + the Cloudflare Insights beacon host that
+  #   every family repo allows (the zone may inject the beacon by policy; a
+  #   CSP that omits it silently blocks it and logs console errors).
+  # - connect-src: the CF Insights beacon, plus the GA4 collection hosts,
+  #   because analytics ride Google Analytics 4 by way of Cloudflare Zaraz
+  #   (see /privacy). Zaraz proxies GA through Cloudflare's edge, so the
+  #   direct GA domains are named too (the prestruct/example model).
   # - style-src / font-src: system fonts only, no Google Fonts.
-  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless

@@ -1,0 +1,12 @@
+22
+# Node.js version for the portfolio's Cloudflare Pages build.
+#
+# The Pages project's root directory is web/ (DEPLOY.md section 2), so the
+# build image reads THIS file, not the repo root's - the same reason vant
+# mirrors its .npmrc into each Pages root.
+#
+# 22 is active LTS; the CF v3 build image defaults to 22.23.4, and vite 8
+# + prestruct need ^20.19 || >=22.12. The version line stays FIRST: the
+# family's CF Pages deploy (vant, pass 338) proved a comments-first .nvmrc
+# is not something every builder parser survives - it installed an EOL
+# node anyway and tripped npm EBADENGINE.

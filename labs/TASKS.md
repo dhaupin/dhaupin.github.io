@@ -7,7 +7,7 @@ One file, appended per landing/session, newest last, with receipts (files, gates
 - The docs hub (P1) and the portfolio half (P3) have both landed. The portfolio's open questions (art direction, play content, consent banner, the dedicated domain) are still owner decisions; see `labs/prd-dhaupin-portfolio.md` section 12.
 - **The docs hub still serves from the legacy Pages builder.** The docs lane caller (`.github/workflows/docs-deploy.yml`) is in the tree, but the repo's Pages settings must switch the build source from the legacy builder to **GitHub Actions** before the lane runs (DEPLOY.md section 1). Until then `docs.creadev.org` serves the legacy build.
 - **`refresh-projects.yml` needs the `CREADEV_TOKEN` repo secret** (a token scoped to the private `dhaupin/creadev`). The committed `docs/_data/projects.json` builds the hub until the secret lands; the scheduled fetch then keeps the provenance commit fresh.
-- **The Cloudflare Pages project is not wired yet.** `web/` builds clean locally (`8/8 pages rendered`), but the CF Pages project (root `web`, build `npm run build`, output `dist`, domain `dhaupin.creadev.org`) is an owner step; the domain does not resolve as of 2026-11-17.
+- **The Cloudflare Pages project is not wired yet.** `web/` builds clean locally (`8/8 pages rendered`), but the CF Pages project (root `web`, build `npm run build`, output `dist`, Node 22, domain `dhaupin.creadev.org`) is an owner step; the domain does not resolve as of 2026-11-17. The tree now carries `web/.nvmrc` and `web/.npmrc` for the `web` root (see the 2026-11-17 first-build entry below); the dashboard settings are the owner's to set.
 - The portfolio domain is undecided (`dhaupin.creadev.org` planned; `dhaupin.com` free). See `labs/prd-dhaupin-portfolio.md` section 12.
 - The marketing headline numbers wait on a decision: the chats (a non-browsing model, so stale by construction) cite 69 packs / 9 hosts / 290 attacks / 192 tests; the verified counts (2026-11-17) are 83 packs / 25 members / 269 vant rows / 9 npm-live tools. The PRD treats the chat figures as DIRECTION and the tree counts as VERIFIED. See `labs/prd-marketing.md` sections 4 and 11.
 
@@ -122,3 +122,27 @@ The owner asked for the web half of the two-site tree: the portfolio (`dhaupin.c
   - Nothing is committed or pushed; the working tree holds the whole cut.
 
 ---
+
+### 2026-11-17 - the Cloudflare Pages first-build pass (root `web`, the family's node/npm pins, the CSP)
+
+The owner asked to set the CF Pages app dir (root directory) to `/web` and to run over any first-build issues and correct them. Two files and one header line now ride the tree; the Pages dashboard settings are the owner's to set (this repo cannot set them).
+
+- **Root directory `/web` (owner step, documented).** `DEPLOY.md` section 2, `AGENTS.md`'s hosts table, and the Open asks list now name root `web`, build `npm run build`, output `dist`, Node 22. Because the root dir is `web/`, the builder reads the config files **inside `web/`**, not the repo root's - the family law vant states when it mirrors its `.npmrc` into each Pages root.
+
+- **`web/.nvmrc` (new).** Node `22` on the first line (a comments-first file is not something every builder parser survives - vant, pass 338, still installed an EOL node). The CF v3 image defaults to 22.23.4, so this is a pin, not a rescue; it also satisfies vite 8 + prestruct's `^20.19 || >=22.12` floor. A root `.nvmrc` (also 22) covers local tooling and CI (`test.yml` pins 22).
+
+- **`web/.npmrc` (new).** `legacy-peer-deps=true`, the family's npm 10.x arborist guard (npm/cli#9787). The CF v3 image ships npm 10.9.9 and `vite` 8 declares an optional `@vitejs/devtools` peer - the exact crash shape vant hit on a Pages deploy of the same graph. The committed lockfile makes `npm ci` a no-op for the flag; it guards the re-resolve path (a stale lock) that actually crashed. The root graph has no such peer shape, so the repo root gets no `.npmrc`.
+
+- **`web/public/_headers` CSP (corrected).** The CSP omitted `https://static.cloudflareinsights.com` (script-src) and `https://cloudflareinsights.com` (connect-src) - the Cloudflare Insights beacon host that **every** family `_headers` allows (a zone policy may inject the beacon; a CSP without it silently blocks it). Added those, plus the GA4/Zaraz hosts the `prestruct/example` model names (`stats.g.doubleclick.net`, `www.googletagmanager.com`, `www.google.com`), since `/privacy` discloses GA4-via-Zaraz.
+
+- **A false alarm, corrected on the record.** An earlier read of this task suspected `NODE_ENV=production` (a CF default) would prune devDependencies and leave `prestruct: not found`. It does not: `coreforge/web` - the canonical same-shape rig - deployed green on CF Pages with `vite` in `devDependencies` and no `.npmrc`, so the Pages builder does not set `NODE_ENV=production` and does not prune devDeps. The pruning reproduces only when `NODE_ENV=production` is set by hand.
+
+- **Receipts (measured this session):**
+  - Clean-extract first-build simulation at the CF v3 toolchain (Node 22.23.4 / npm 10.9.9), root dir `web`, new `.nvmrc` + `.npmrc` in place: `npm ci` clean (24 packages), then `[prerender] Done. 8/8 pages rendered.` and `[prestruct] audit: 0 failures, 0 warning(s) - clean`.
+  - The crash shape is real in the committed lock: `node_modules/vite` peer `@vitejs/devtools: ^0.7.1 || ^0.8.0`, `optional: true`.
+  - The gate battery stays green: `sync:check`, `FRONTMATTER`, `DOCS LINKS`, `DOCS STYLE`, `LANGUAGE GATE`, `BRAND-CENSUS`, `THEME-PARITY`, `PRESTRUCT PINS` all PASS; the fiction gate over `web/` PASS (36 files).
+
+- **Open ask this pass raises (not corrected here - it needs an owner call):** `web/src/pages/Privacy.jsx` says a "Cookie settings" control is available, but no such control is built (no consent banner, no footer button). The five sibling struct-family sites (same creadev.org zone) instead say "Analytics - none configured; if a hosting-added beacon is ever enabled by zone policy, it will be listed here rather than hiding." Either build the control or match the sibling copy; `labs/prd-dhaupin-portfolio.md` section 12 already lists the consent banner as open.
+
+---
+
