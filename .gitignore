@@ -1,0 +1,16 @@
+# node_modules (the lane tools install here at build time)
+node_modules/
+
+# build output
+docs/_site/
+docs/pagefind/
+docs/pagefind*
+
+# Local Jekyll toolchain (the lane installs fresh in CI; a local build drops
+# these, and an in-tree vendor/ would both bloat the repo and feed the docs
+# gates the gem READMEs as if they were site pages)
+docs/.bundle/
+docs/vendor/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/Gemfile.lock

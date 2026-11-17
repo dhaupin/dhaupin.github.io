@@ -1,0 +1,66 @@
+# test - the push/PR battery.
+#
+# Every gate that exists today runs on every change: the derived-surface check
+# (sync:check), the docs gates (frontmatter, links, style), the language gate,
+# the action-pin guard, and a full Jekyll build so a broken layout or Liquid
+# filter red-lights here instead of in the deploy lane. The deploy lane
+# (docs-deploy.yml) runs on main pushes only, so this is the PR coverage.
+
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  battery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Hermetic install against the committed lockfile. The pinned lane tools
+      # (coreforge for the gates, freestruct, pagefind) ride the same install,
+      # so one `npm ci` covers the whole battery (a second `npm install
+      # --no-save` would PRUNE the first - the lane's measured footgun).
+      - name: Install (hermetic)
+        run: npm ci --no-audit --no-fund
+
+      # The derived surfaces (docs/_config.yml, docs/freestruct.config.yml,
+      # CNAME) are generated from site.config.js: a stale one is a failure, not
+      # a warning (a hand-edited derived file would ship).
+      - name: Derived surfaces current
+        run: npm run sync:check
+
+      # The docs gates (frontmatter, links, style) and the language gate,
+      # carried canonically in coreforge so every rig repo runs the same rules.
+      - name: Docs + language gates
+        run: npm run check
+
+      # Pins never float: every `uses:` names a 40-hex SHA.
+      - name: Action pins
+        run: node node_modules/coreforge/lib/check-action-pins.cjs
+
+      # Workflow YAML parse + the shell invariants (the birth gate).
+      - name: Birth gate
+        run: node node_modules/coreforge/lib/gates/check-birth-gate.cjs
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+          working-directory: './docs'
+
+      - name: Jekyll build
+        run: cd docs && bundle exec jekyll build

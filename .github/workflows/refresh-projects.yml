@@ -1,0 +1,69 @@
+# Refresh projects - the roster bridge's scheduled half (labs/prd.md section 7).
+#
+# The docs hub renders docs/_data/projects.json, which scripts/fetch-projects.mjs
+# writes from dhaupin/creadev's src/data/projects.js (a PRIVATE repo, so the
+# fetch needs a token scoped to it: the CREADEV_TOKEN secret). This workflow
+# runs the fetch on a schedule, and commits ONLY when the parsed data actually
+# moved (the provenance commit changed). A no-op run leaves the tree untouched.
+#
+# The commit lands docs/_data/projects.json, which the docs lane's `paths`
+# filter names (docs/**), so the next docs deploy picks up the new roster. The
+# script refuses loudly on a parse miss or a token failure, so a broken fetch
+# red-lights here instead of shipping a stale grid.
+
+name: Refresh projects
+
+on:
+  schedule:
+    # Weekly, Monday 06:00 UTC - the roster moves on the order of weeks, and a
+    # scheduled run keeps the provenance commit fresh without a manual nudge.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-projects
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install (hermetic)
+        run: npm ci --no-audit --no-fund
+
+      # The fetch needs a token that can read the PRIVATE creadev repo; the
+      # default GITHUB_TOKEN cannot cross repos. A parse miss or an auth
+      # failure is a hard exit 1, never a silent empty grid.
+      - name: Fetch the roster
+        env:
+          CREADEV_TOKEN: ${{ secrets.CREADEV_TOKEN }}
+        run: node scripts/fetch-projects.mjs
+
+      # Commit only a real change: the fetch is byte-deterministic over an
+      # unchanged source (same commit, same sha256), so a run that found no new
+      # source produces no diff.
+      - name: Commit the refreshed roster
+        run: |
+          if git diff --quiet -- docs/_data/projects.json; then
+            echo "roster unchanged; nothing to commit"
+            exit 0
+          fi
+          git config user.name "openhands"
+          git config user.email "openhands@all-hands.dev"
+          git add docs/_data/projects.json
+          git commit -m "chore: refresh the project roster (scheduled fetch)
+
+Co-authored-by: openhands <openhands@all-hands.dev>"
+          git push

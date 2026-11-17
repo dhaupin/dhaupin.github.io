@@ -1,0 +1,70 @@
+---
+# Landing layout: the hub home page uses this. It nests `default` (so the
+# header, theme switch and search stay identical) and adds a scoped style block
+# plus a wider content column. All classes are prefixed `lp-` so nothing leaks
+# into the docs pages that share the frame.
+layout: default
+---
+<style>
+    .main.main-landing { max-width: 1080px; padding: 0 24px 0; }
+    .lp { --lp-gap: 22px; }
+    .lp p { color: var(--ink-soft); }
+
+    /* Hero */
+    .lp-hero { padding: 56px 0 34px; max-width: 760px; }
+    .lp-eyebrow { display: inline-block; font-size: 12px; letter-spacing: .14em;
+        text-transform: uppercase; color: var(--accent); font-weight: 700;
+        border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+        margin-bottom: 20px; }
+    .lp h1 { font-size: clamp(34px, 5.4vw, 52px); line-height: 1.08;
+        letter-spacing: -.02em; margin: 0 0 18px; }
+    .lp h1 .lp-grad { background: linear-gradient(100deg, var(--accent), var(--moss));
+        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .lp-lede { font-size: 19px; line-height: 1.6; color: var(--ink-soft); margin: 0 0 28px; }
+    .lp-cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 22px; }
+    .lp-btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 650;
+        font-size: 15px; padding: 11px 20px; border-radius: 9px; text-decoration: none;
+        border: 1px solid var(--line); transition: transform .12s ease, border-color .2s; }
+    .lp-btn:hover { text-decoration: none; transform: translateY(-1px); }
+    .lp-btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .lp-btn-primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+    .lp-btn-ghost { background: var(--surface); color: var(--ink); }
+    .lp-btn-ghost:hover { border-color: var(--accent); }
+
+    /* Section headings */
+    .lp-section { margin: 46px 0 0; }
+    .lp-kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+        color: var(--ink-light); font-weight: 700; margin-bottom: 8px; }
+    .lp-h2 { font-size: 26px; letter-spacing: -.01em; margin: 0 0 8px; }
+    .lp-sub { font-size: 16px; color: var(--ink-soft); margin: 0 0 24px; max-width: 680px; }
+
+    /* Card grid */
+    .lp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--lp-gap); }
+    .lp-card { background: var(--surface); border: 1px solid var(--line);
+        border-radius: 12px; padding: 20px 20px 22px; }
+    .lp-card h3 { font-size: 16px; margin: 0 0 8px; display: flex; align-items: center; gap: 9px; }
+    .lp-card p { font-size: 14px; line-height: 1.6; margin: 0; }
+    .lp-card code { font-size: 12.5px; }
+    .lp-card a { text-decoration: none; }
+
+    /* Project chips (the grid preview on the lander) */
+    .lp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .lp-chip { font-size: 13px; color: var(--ink); background: var(--surface);
+        border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; text-decoration: none; }
+    .lp-chip:hover { border-color: var(--accent); }
+
+    /* Closing band */
+    .lp-band { margin: 54px 0 8px; padding: 34px 28px; border-radius: 14px;
+        background: linear-gradient(135deg, var(--raised), var(--surface));
+        border: 1px solid var(--line); }
+    .lp-band h2 { margin: 0 0 10px; font-size: 24px; }
+    .lp-band p { margin: 0 0 20px; font-size: 16px; color: var(--ink-soft); max-width: 620px; }
+    .lp-band .lp-cta { margin-bottom: 0; }
+
+    @media (max-width: 768px) {
+        .main.main-landing { padding: 0 16px; }
+        .lp-hero { padding: 34px 0 24px; }
+    }
+</style>
+{{ content }}

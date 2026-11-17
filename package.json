@@ -1,0 +1,30 @@
+{
+  "name": "creadev-docs-hub",
+  "private": true,
+  "type": "module",
+  "description": "The Creadev docs system hub (docs.creadev.org): Jekyll, freestruct, pagefind, and the roster bridge.",
+  "license": "MIT",
+  "author": "dhaupin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dhaupin/dhaupin.github.io"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "coreforge": "1.0.0",
+    "freestruct": "1.4.1",
+    "pagefind": "1.5.2"
+  },
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "sync:check": "node scripts/sync.mjs --check",
+    "projects": "node scripts/fetch-projects.mjs",
+    "projects:check": "node scripts/fetch-projects.mjs --check",
+    "build": "bash scripts/build.sh",
+    "lint:docs": "node node_modules/coreforge/lib/gates/check-docs-frontmatter.cjs && node node_modules/coreforge/lib/gates/check-docs-links.cjs && node node_modules/coreforge/lib/gates/check-docs-style.cjs",
+    "lint:language": "node node_modules/coreforge/lib/gates/check-language.cjs",
+    "check": "npm run sync:check && npm run lint:docs && npm run lint:language"
+  }
+}
