@@ -4,9 +4,10 @@ One file, appended per landing/session, newest last, with receipts (files, gates
 
 ## Open asks (carry forward until landed)
 
-- The docs hub (P1) has landed: the Jekyll rig, the roster bridge, the three surfaces (lander, projects, search), the family gates, and the docs lane caller. The portfolio (P3) has not started; the open questions in its PRD are unanswered.
+- The docs hub (P1) and the portfolio half (P3) have both landed. The portfolio's open questions (art direction, play content, consent banner, the dedicated domain) are still owner decisions; see `labs/prd-dhaupin-portfolio.md` section 12.
 - **The docs hub still serves from the legacy Pages builder.** The docs lane caller (`.github/workflows/docs-deploy.yml`) is in the tree, but the repo's Pages settings must switch the build source from the legacy builder to **GitHub Actions** before the lane runs (DEPLOY.md section 1). Until then `docs.creadev.org` serves the legacy build.
 - **`refresh-projects.yml` needs the `CREADEV_TOKEN` repo secret** (a token scoped to the private `dhaupin/creadev`). The committed `docs/_data/projects.json` builds the hub until the secret lands; the scheduled fetch then keeps the provenance commit fresh.
+- **The Cloudflare Pages project is not wired yet.** `web/` builds clean locally (`8/8 pages rendered`), but the CF Pages project (root `web`, build `npm run build`, output `dist`, domain `dhaupin.creadev.org`) is an owner step; the domain does not resolve as of 2026-11-17.
 - The portfolio domain is undecided (`dhaupin.creadev.org` planned; `dhaupin.com` free). See `labs/prd-dhaupin-portfolio.md` section 12.
 - The marketing headline numbers wait on a decision: the chats (a non-browsing model, so stale by construction) cite 69 packs / 9 hosts / 290 attacks / 192 tests; the verified counts (2026-11-17) are 83 packs / 25 members / 269 vant rows / 9 npm-live tools. The PRD treats the chat figures as DIRECTION and the tree counts as VERIFIED. See `labs/prd-marketing.md` sections 4 and 11.
 
@@ -79,6 +80,45 @@ The owner asked to stand up the web + projects + search lander for `docs.creadev
 - **Open asks this session leaves for the owner:**
   - The `CREADEV_TOKEN` repo secret (a token scoped to `dhaupin/creadev`) is required by `refresh-projects.yml`; the committed `docs/_data/projects.json` builds the hub until then.
   - The Pages settings must switch the build source from the legacy builder to GitHub Actions (DEPLOY.md section 1).
+  - Nothing is committed or pushed; the working tree holds the whole cut.
+
+---
+
+### 2026-11-17 - P3: the portfolio half lands (the shell, the five arms, the legal pair, the art)
+
+The owner asked for the web half of the two-site tree: the portfolio (`dhaupin.creadev.org`). The `web/` tree is now built end to end and green locally. Nothing is pushed; the Cloudflare Pages project wiring is the owner step that remains.
+
+- **What landed:**
+  - `site.config.js` - a new `portfolio` block (name, wordmark, tagline, description, url, repo, contact, nav, footerExtras, the eight routes with per-page meta, and the 404 copy) and a `family` list (the struct-family menu). The docs half never reads `portfolio`; the two brands cannot bleed.
+  - `scripts/sync.mjs` - extended to generate `docs/_data/family.yml` (the family menu) and the web surfaces (`web/public/robots.txt`, `web/public/site.webmanifest`, and the `CNAME` from the docs host).
+  - `docs/_data/nav.yml` - rewritten to carry ONLY the hub's own pages; the family links moved to the generated `family.yml` (so no brand or domain literal sits in a hand-kept data file, which the brand census gate refuses). `docs/_layouts/default.html` now iterates `site.data.nav | concat: site.data.family`.
+  - `web/` - the portfolio tree: `package.json` (React 19 + Vite 8 + prestruct 1.5.1), `vite.config.js`, `ssr.config.js` (the prerender adapter over the `portfolio` block), `index.html` (the no-flash theme bootstrap), `scripts/make-art.mjs` (the deterministic icon + OG generator), and `public/` (the icon set, the OG card, the CF Pages `_headers` + `_redirects`).
+  - `web/src/` - the app: `site.js`, `theme.js`, `styles.css`, `AppLayout.jsx`, `AppIslands.jsx`, `islands.js`; the components (`Nav`, `Footer`, `navItems`, `ThemeSwitch`, `SchemeSwitch`, `ContactCta`, `ObfuscatedContact`); the hook (`usePageMeta`); and the pages (`Home`, `Work`, `Play`, `World`, `Contribute`, `Contact`, `Terms`, `Privacy`, `NotFound`).
+  - `.github/workflows/test.yml` - a hermetic `npm ci --prefix web` plus `npm run build --prefix web`, so a broken portfolio route red-lights on the PR, not in the CF Pages deploy.
+  - `package.json` - a `lint:gates` script (brand census, theme parity, prestruct pins) folded into `npm run check`.
+
+- **The five arms and the legal pair (the ask):**
+  - `work` - the professional story: the range grid, the proof table (each number tagged VERIFIED or DIRECTION), and the three case studies (problem, contract, verification).
+  - `play` - the wild half: the canvas of experiments, games, generative work, and art.
+  - `world` - the give-back arm: helping developers, giving abilities to agents, consistent seams and flow, with the open-source family linked.
+  - `contribute` - the participation arm: what we expect, and the invitation that you do not have to code.
+  - `contact` - the hidden email (the `creadev` `ObfuscatedContact` pattern), a preference ladder (tracker, docs, email), and a care note on response times.
+  - `terms` + `privacy` - the legal pair, with the privacy copy naming what the site actually does (Google Analytics 4 via Cloudflare Zaraz; no accounts, no ads, no data sold).
+
+- **Receipts (measured this session):**
+  - The portfolio builds clean: `[prerender] Done. 8/8 pages rendered.`, `[prestruct] audit: 0 failures, 0 warning(s) - clean`.
+  - Served locally on port 12001: HTTP 200 for `/`, `/work/`, `/play/`, `/world/`, `/contribute/`, `/contact/`, `/terms/`, `/privacy/`, `/404.html`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/icon.svg`, `/og-image.png`. The rendered home carries the title `dhaupin - web, app, ecom, enterprise, agent, orchestration`, the canonical `https://dhaupin.creadev.org`, and the full og:image set (url, type, width, height, alt).
+  - The contact email is bot-hidden: the baked HTML ships `hello [at] creadev [dot] org` and carries no `mailto:`; the browser assembles the real address after mount.
+  - The gates pass: `BRAND-CENSUS: PASS (4 literal(s) - creadev docs, docs.creadev.org, github.com, creadev.org - confined to site.config.js across 22 surfaces)`, `THEME-PARITY: PASS (3 schemes, both halves)`, `PRESTRUCT PINS: PASS (2 declarations at or above ^1.3.0)`, `ACTION PINS: PASS (9 refs)`, `BIRTH-GATE: PASS (3 workflows)`.
+  - The docs half still builds green with the generated family menu: `bundle exec jekyll build` renders the sidebar with the hub's own pages then the family links.
+
+- **Art direction (a decision made in v1):** the PRD's section 6 leaves three directions open. v1 takes "family palette, personal art": the family tokens carry the palette and an authored mark (an orbit, the flow between tools) carries the personality. The mark is DRAWN by `web/scripts/make-art.mjs` (no raster source art exists yet) rather than traced; when the owner drops a real logo, the family's `adopt-icons` pipeline replaces it and this script retires. The script is deterministic (same inputs, same bytes) and needs `npm i --no-save @resvg/resvg-js dejavu-fonts-ttf` to run (the lockfile is untouched).
+
+- **Toolchain note:** the portfolio rides the family rig's versions: React 19.3.1, Vite 8.3.8, prestruct 1.5.1, react-router-dom 7.x. `sharp` is unavailable in this environment, so the art generation uses `@resvg/resvg-js` instead (the same family approach for OG cards).
+
+- **Open asks this session leaves for the owner:**
+  - The Cloudflare Pages project (root `web`, build `npm run build`, output `dist`, domain `dhaupin.creadev.org`) is not wired; the domain does not resolve as of 2026-11-17.
+  - The portfolio's PRD open questions (the dedicated domain, the tagline, the play content, the consent banner, whether a form is wanted) remain; see `labs/prd-dhaupin-portfolio.md` section 12.
   - Nothing is committed or pushed; the working tree holds the whole cut.
 
 ---

@@ -1,0 +1,26 @@
+{
+  "name": "dhaupin-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "The dhaupin portfolio - the personal, art-led half of the two-site tree (prestruct prerender + Cloudflare Pages).",
+  "scripts": {
+    "dev": "vite",
+    "build": "prestruct build",
+    "preview": "vite preview",
+    "audit": "prestruct audit"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.3.0",
+    "prestruct": "1.5.1",
+    "vite": "^8.3.7"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

@@ -2,7 +2,7 @@
 
 This repo carries **two sites**: the Creadev docs system hub (`docs.creadev.org`, GitHub Pages) and the dhaupin portfolio (`dhaupin.creadev.org`, Cloudflare Pages). One tree, two hosts, two builds. Read [`labs/prd.md`](./labs/prd.md) for the repo story, [`labs/prd-creadev-docs.md`](./labs/prd-creadev-docs.md) and [`labs/prd-dhaupin-portfolio.md`](./labs/prd-dhaupin-portfolio.md) for the per-site detail, [`labs/prd-marketing.md`](./labs/prd-marketing.md) for the portfolio narrative, [`labs/family-canon.md`](./labs/family-canon.md) for the shared family laws and the canonical models this repo adopts, and [`labs/TASKS.md`](./labs/TASKS.md) for the rolling work log.
 
-**Status: P1, the docs hub has landed.** The `docs/` half is built end to end: the Jekyll rig (three surfaces: lander, projects index, search), the roster bridge, the family gates, and the docs lane caller. The `web/` portfolio half (P3) has not started. The Pages settings switch (legacy builder to GitHub Actions) and the `CREADEV_TOKEN` secret are the owner steps that remain; see [`labs/TASKS.md`](./labs/TASKS.md).
+**Status: P3, the portfolio half has landed.** Both halves are now built. The `docs/` half (P1) is the Jekyll rig with three surfaces (lander, projects index, search), the roster bridge, the family gates, and the docs lane caller. The `web/` portfolio half (P3) is the prestruct-prerendered React/Vite tree: the shell (nav, footer, theme), the five arms (work, play, world, contribute, contact), the legal pair, the generated icon set and OG card, and the Cloudflare Pages config. Both build green locally (docs: Jekyll + freestruct `--strict` + pagefind; portfolio: `8/8 pages rendered`, audit `0 failures`). The Pages settings switch (legacy builder to GitHub Actions), the `CREADEV_TOKEN` secret, and the Cloudflare Pages project wiring are the owner steps that remain; see [`labs/TASKS.md`](./labs/TASKS.md).
 
 ## Layout (target shape)
 
@@ -11,11 +11,13 @@ site.config.js        the repo identity file (the coreforge rig contract); carri
                       identity plus a `portfolio` block for the personal half
 docs/                 the docs hub (Jekyll + freestruct + pagefind), deploys to GitHub Pages
   _config.yml         the docs identity (derived from site.config.js)
-  _data/nav.yml       the single nav source the layout iterates
+  _data/nav.yml       the hub's own pages (the single hand-authored nav source)
+  _data/family.yml    the family menu (derived from site.config.js by sync.mjs)
   _layouts/           default (docs frame) + landing (the wide home)
   freestruct.config.yml   the post-build SEO layer's config
 web/                  the portfolio (prestruct-prerendered React/Vite), deploys to Cloudflare Pages
-  src/                the app: work, play, world, contribute, contact
+  src/                the app: work, play, world, contribute, contact, the legal pair, the shell
+  scripts/make-art.mjs    the deterministic icon + OG generator
   ssr.config.js       the prerender adapter (derived from site.config.js)
   public/             the art, the icons, the CF Pages _headers + _redirects
 labs/                 the PRDs, the task log, the history
@@ -57,6 +59,10 @@ The repo is the GitHub user site (`dhaupin.github.io`), so the CNAME file keeps 
 ## Common commands
 
 ```bash
+# derived surfaces (both halves): docs/_config.yml, docs/freestruct.config.yml,
+# docs/_data/family.yml, the CNAME pair, web/public/robots.txt + site.webmanifest
+npm run sync && npm run sync:check     # --check refuses drift (a hand edit is a failure)
+
 # docs half (Ruby + Jekyll). Ruby is installed system-wide on this box.
 cd docs && bundle config set --local path vendor/bundle && bundle install
 cd docs && bundle exec jekyll build          # renders docs/_site
@@ -65,11 +71,17 @@ cd docs && bundle exec jekyll build          # renders docs/_site
 node node_modules/freestruct/bin/freestruct.mjs
 
 # the portfolio half
-npm install --prefix web && npm run build --prefix web   # "N/N pages rendered" is healthy
+npm ci --prefix web && npm run build --prefix web   # "N/N pages rendered" is healthy
+
+# the portfolio art (icons + OG card), regenerated deterministically from the mark
+cd web && npm i --no-save @resvg/resvg-js dejavu-fonts-ttf && node scripts/make-art.mjs
+
+# the whole battery: derived surfaces + docs gates + language + brand/theme/pin gates
+npm run check
 
 # the family style + language gates (run over this repo's prose)
-node /path/to/coreforge/lib/gates/check-docs-style.cjs
-node /path/to/coreforge/lib/gates/check-language.cjs
+node node_modules/coreforge/lib/gates/check-docs-style.cjs
+node node_modules/coreforge/lib/gates/check-language.cjs
 ```
 
 The docs preview recipe (build from a scratch copy so nothing taints the tree) is in [`DEPLOY.md`](./DEPLOY.md).

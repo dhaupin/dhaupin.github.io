@@ -2,9 +2,11 @@
 #
 # Every gate that exists today runs on every change: the derived-surface check
 # (sync:check), the docs gates (frontmatter, links, style), the language gate,
-# the action-pin guard, and a full Jekyll build so a broken layout or Liquid
-# filter red-lights here instead of in the deploy lane. The deploy lane
-# (docs-deploy.yml) runs on main pushes only, so this is the PR coverage.
+# the action-pin guard, the portfolio build (prestruct prerender), and a full
+# Jekyll build so a broken layout or Liquid filter red-lights here instead of
+# in the deploy lane. The docs deploy lane (docs-deploy.yml) runs on main pushes
+# only; the portfolio half deploys from Cloudflare Pages' own Git integration,
+# so this is the PR coverage for both halves.
 
 name: test
 
@@ -54,6 +56,18 @@ jobs:
       # Workflow YAML parse + the shell invariants (the birth gate).
       - name: Birth gate
         run: node node_modules/coreforge/lib/gates/check-birth-gate.cjs
+
+      # The portfolio half (web/) builds through the engine's own gates: a
+      # separate install against web/package-lock.json, then `prestruct build`,
+      # whose audit ends "0 failures" and whose prerender ends "N/N pages
+      # rendered". Cloudflare Pages runs the same build from the Git
+      # integration; this keeps a broken route or a bad head tag red on the PR,
+      # not in the deploy.
+      - name: Install web deps (hermetic)
+        run: npm ci --prefix web --no-audit --no-fund
+
+      - name: Portfolio build (prestruct)
+        run: npm run build --prefix web
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1

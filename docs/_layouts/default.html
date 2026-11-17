@@ -233,7 +233,8 @@
     <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
-        {% for group in site.data.nav %}
+        {%- assign nav_groups = site.data.nav | concat: site.data.family -%}
+        {% for group in nav_groups %}
         <div class="sidebar-section">
             <div class="sidebar-title">{{ group.title }}</div>
             <ul class="sidebar-nav">

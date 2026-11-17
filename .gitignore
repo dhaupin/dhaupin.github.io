@@ -14,3 +14,8 @@ docs/vendor/
 docs/.jekyll-cache/
 docs/.jekyll-metadata
 docs/Gemfile.lock
+
+# the portfolio half (web/): build output and the prestruct cache
+web/node_modules/
+web/dist/
+web/.prestruct/

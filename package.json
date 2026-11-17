@@ -25,6 +25,7 @@
     "build": "bash scripts/build.sh",
     "lint:docs": "node node_modules/coreforge/lib/gates/check-docs-frontmatter.cjs && node node_modules/coreforge/lib/gates/check-docs-links.cjs && node node_modules/coreforge/lib/gates/check-docs-style.cjs",
     "lint:language": "node node_modules/coreforge/lib/gates/check-language.cjs",
-    "check": "npm run sync:check && npm run lint:docs && npm run lint:language"
+    "lint:gates": "node node_modules/coreforge/lib/gates/check-brand-census.mjs && node node_modules/coreforge/lib/gates/check-theme-parity.cjs && node node_modules/coreforge/lib/check-prestruct-pins.cjs",
+    "check": "npm run sync:check && npm run lint:docs && npm run lint:language && npm run lint:gates"
   }
 }

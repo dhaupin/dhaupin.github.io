@@ -1,8 +1,10 @@
 # The docs sidebar nav (the layout iterates this). URLs are BASEURL-RELATIVE:
 # the layout prefixes site.baseurl, so the same nav.yml works on any deploy path.
 #
-# The hub's own pages come first; the family docs sites follow as external links
-# (each project keeps its own docs at its own host; the hub links to them).
+# This file carries ONLY the hub's own pages. The family links (the external
+# groups below the hub pages) are GENERATED into docs/_data/family.yml from
+# site.config.js, so no brand or domain literal lives here (the brand census
+# gate holds that line).
 
 - title: The hub
   items:
@@ -12,33 +14,3 @@
     url: /projs/
   - title: Search
     url: /search/
-
-- title: The family
-  items:
-  - title: coreforge
-    url: https://coreforge.creadev.org
-  - title: monoforge
-    url: https://monoforge.creadev.org
-  - title: freestruct
-    url: https://freestruct.creadev.org
-  - title: prestruct
-    url: https://prestruct.creadev.org
-  - title: packstruct
-    url: https://packstruct.creadev.org
-  - title: crashtest
-    url: https://crashtest.creadev.org
-  - title: poststruct
-    url: https://poststruct.creadev.org
-  - title: eyestruct
-    url: https://eyestruct.creadev.org
-  - title: govstruct
-    url: https://govstruct.creadev.org
-  - title: vant
-    url: https://vant.creadev.org
-
-- title: Elsewhere
-  items:
-  - title: creadev.org
-    url: https://creadev.org
-  - title: GitHub
-    url: https://github.com/dhaupin

@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 2026-11-17 - the portfolio half lands (P3: the shell, the five arms, the legal pair, the art)
+
+The `web/` portfolio (`dhaupin.creadev.org`) is built: a prestruct-prerendered React/Vite tree carrying the shell (nav, footer, theme), the five arms (work, play, world, contribute, contact), the legal pair (terms, privacy), a deterministically generated icon set and OG card, and the Cloudflare Pages config. It builds green locally: `8/8 pages rendered`, audit `0 failures, 0 warning(s)`. The Cloudflare Pages project wiring is the owner step that remains (see `labs/TASKS.md`).
+
+### Added
+
+- **`site.config.js` `portfolio` block** - the personal identity (name `dhaupin`, wordmark, tagline, description, url, repo, contact, nav, footerExtras, the eight routes with per-page meta, and the 404 copy). The docs half never reads it, so the two brands cannot bleed.
+- **`site.config.js` `family` list** - the family menu (the struct-family members plus `creadev.org` and GitHub) the docs sidebar renders. Generated into `docs/_data/family.yml`.
+- **`web/`** - the portfolio tree: `package.json` (React 19 + Vite 8 + prestruct 1.5.1), `vite.config.js`, `ssr.config.js` (the prerender adapter over the `portfolio` block), `index.html` (the no-flash bootstrap), `src/` (the app, the shell, the pages), `scripts/make-art.mjs` (the deterministic icon + OG generator), and `public/` (the icon set, the OG card, the CF Pages `_headers` + `_redirects`).
+- **`web/src/`** - `site.js` (the `portfolio` accessor), `theme.js` (the two axes as data), `styles.css` (the family token shell), `AppLayout.jsx`, `AppIslands.jsx`, `islands.js`, the components (`Nav`, `Footer`, `navItems`, `ThemeSwitch`, `SchemeSwitch`, `ContactCta`, `ObfuscatedContact`), the hook (`usePageMeta`), and the pages (`Home`, `Work`, `Play`, `World`, `Contribute`, `Contact`, `Terms`, `Privacy`, `NotFound`).
+- **`docs/_data/family.yml`** - the generated family menu (a `nav.yml` sibling).
+- **`.github/workflows/test.yml`** - two new steps: a hermetic `npm ci --prefix web` and the `prestruct build`, so a broken portfolio route red-lights on the PR, not in the Cloudflare Pages deploy.
+
+### Changed
+
+- **`docs/_data/nav.yml`** - rewritten to carry ONLY the hub's own pages; the family links moved to the generated `family.yml`, so no brand or domain literal lives in a hand-kept data file (the brand census gate holds that line).
+- **`docs/_layouts/default.html`** - the sidebar now iterates `site.data.nav | concat: site.data.family`.
+- **`scripts/sync.mjs`** - extended to generate the family menu and the web surfaces (`web/public/robots.txt`, `web/public/site.webmanifest`, and the `CNAME` from the docs host).
+- **`package.json`** - a `lint:gates` script (brand census, theme parity, prestruct pins) folded into `npm run check`.
+- **`.gitignore`** - the portfolio build products (`web/node_modules/`, `web/dist/`, `web/.prestruct/`).
+
+### Verified
+
+- The portfolio builds clean: `[prerender] Done. 8/8 pages rendered.`, `[prestruct] audit: 0 failures, 0 warning(s) - clean`.
+- Served locally on port 12001: HTTP 200 for `/`, `/work/`, `/play/`, `/world/`, `/contribute/`, `/contact/`, `/terms/`, `/privacy/`, `/404.html`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/icon.svg`, `/og-image.png`.
+- The contact email is bot-hidden: the baked HTML ships `hello [at] creadev [dot] org` and carries no `mailto:`; the browser assembles the real address after mount.
+- The gates pass: `BRAND-CENSUS: PASS (4 literal(s) confined to site.config.js across 22 surfaces)`, `THEME-PARITY: PASS (3 schemes, both halves)`, `PRESTRUCT PINS: PASS (2 declarations at or above ^1.3.0)`, `ACTION PINS: PASS (9 refs)`, `BIRTH-GATE: PASS (3 workflows)`.
+- The docs half still builds green with the generated family menu (Jekyll renders the family links in the sidebar).
+
 ### 2026-11-17 - the docs hub lands (P1: the rig, the roster bridge, the lane)
 
 The docs half of the tree is built end to end: a Jekyll rig with three surfaces (a lander, a projects index, and one search), the roster bridge, the family gates, and the docs lane caller. The hub builds green locally; the Pages settings switch and the `CREADEV_TOKEN` secret are the owner steps that remain (see `labs/TASKS.md`).

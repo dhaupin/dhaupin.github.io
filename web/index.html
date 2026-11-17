@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    Shell template. Do not add brand meta here directly.
+
+    The npm prestruct engine's inject-brand pass populates these tags at
+    build time from ssr.config.js (`prestruct build`): the title tag,
+    description, author, keywords, canonical, Open Graph, Twitter Card,
+    JSON-LD.
+
+    (This comment avoids the literal title markup on purpose: prestruct's
+    duplicate-title audit check is a raw tag-name count, so raw markup in
+    prose would read as a second title element and fail the build.)
+
+    The placeholder values below give the inject regex something to match.
+    They are replaced before the site is deployed - never served as-is.
+  -->
+
+  <!-- Primary SEO (populated by prestruct inject-brand) -->
+  <title>Your Site</title>
+  <meta name="description" content="" />
+  <meta name="keywords"    content="" />
+  <meta name="author"      content="" />
+  <meta name="robots"      content="index, follow" />
+  <link rel="canonical"    href="https://your-site.example.com/" />
+
+  <!-- Favicons + identity (real files ship in public/). -->
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#edf3f2" />
+
+  <script>
+    // Theme + paint-scheme bootstrap: the default tokens are light/petrol;
+    // apply a persisted dark theme and a persisted paint scheme before the
+    // stylesheet paints. Keep the keys and the paper map in sync with
+    // src/theme.js, ThemeSwitch.jsx, and SchemeSwitch.jsx.
+    try {
+      var paper = {
+        petrol: { dark: '#0a1113', light: '#edf3f2' },
+        golden: { dark: '#121011', light: '#f6f1e7' },
+        jade:   { dark: '#121011', light: '#f6f1e7' }
+      }
+      var scheme = localStorage.getItem('site-paint-scheme') || 'petrol'
+      if (paper[scheme] && scheme !== 'petrol') document.documentElement.dataset.scheme = scheme
+      var dark = localStorage.getItem('site-theme') === 'dark'
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      var p = (paper[scheme] || paper.petrol)[dark ? 'dark' : 'light']
+      document.currentScript.previousElementSibling.setAttribute('content', p)
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Entry module: vite build compiles this into the hashed <script>+<link>
+       pair in dist/index.html, which prerender keeps in every page. -->
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
