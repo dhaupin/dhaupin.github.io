@@ -213,17 +213,23 @@ Detected the following tools from environment: nodejs@22
 , npm@10.9.9
 ...
 node-build: definition not found: 22
+# Node.js version for the portfolio's ...
 ```
 
-**Cause.** The CF build image feeds the **whole file** to asdf as the version string. `web/.nvmrc` held `22` on line 1 followed by a 12-line comment block, so asdf asked `node-build` for a version literally named `22\n# Node.js version...` -> `definition not found: 22`. The build aborts at tool setup, so the failure has nothing to do with our code.
+**Two distinct faults, and the first fix only caught one.** `.nvmrc` reaches the builder through asdf -> node-build, and node-build resolves definitions by exact filename: `share/node-build/22.23.4` exists, `22` and `22.23` do not.
 
-**The earlier lesson was wrong.** The comment block claimed "the version line stays FIRST: a comments-first .nvmrc is not something every builder parser survives" - implying order mattered. It does not: the file is read whole, so *any* comment breaks it regardless of position. vant did not actually survive this by reordering; vant sets `NODE_VERSION=22` in the Pages panel, which bypasses the file entirely.
+1. **Comments.** asdf feeds the *whole file* as the version string, so the comment block became part of it. The tell is the error text itself: a bare version fails as one clean line `definition not found: 22`, whereas the whole-file form spills the comment text onto the following lines - which is exactly what the build log shows.
+2. **A bare major is not a definition.** `22` is a valid nvm alias but node-build has no bare-major definitions, so `22` fails even with every comment removed. Reproduced directly against node-build 5.4.63: `22` -> not found, `22.23` -> not found, `22.23.4` -> resolves and downloads.
 
-**Fix.** Both `.nvmrc` files are now a bare `22` and nothing else. `.npmrc` keeps its comments - npm parses it as INI, where `#` is a real comment; the two files have different contracts.
+**The earlier lesson was wrong twice over.** The old comment block claimed the fix was putting the version line FIRST. Order was never the issue (the file is read whole), and the version itself was wrong too - `22` cannot resolve. vant never survived any of this: its `.nvmrc` sits at its repo root while its Pages roots are `web/home` and `web/dashboard`, so CF never reads vant's file at all. vant relies on `NODE_VERSION` in the panel.
 
-**Gate (rule 9 - second catch family-wide, so it becomes a gate).** `scripts/check-nvmrc.mjs`, wired into `npm run lint:gates` (and so into `npm run check` and CI): every `.nvmrc` must hold exactly one bare version, no comments, no extra lines. Verified it passes on the fixed files and exits 1 on the old comments-first content. `.npmrc` is deliberately not checked.
+**Fix.** Both `.nvmrc` files are now the single line `22.23.4`. `.npmrc` keeps its comments - npm parses it as INI, where `#` is a real comment; the two files have different contracts.
 
-**Belt.** Set `NODE_VERSION=22` in the Pages panel as well. That is what vant relies on, and it makes the build independent of the file.
+**Gate (rule 9 - second catch family-wide).** `scripts/check-nvmrc.mjs`, wired into `npm run lint:gates` (and so `npm run check` and CI): exactly one non-blank line, exact `x.y.z`, no comments. Verified it passes the fixed files and exits 1 on both failure modes - the old comment block, and a bare `22` (with a hint naming the missing partial definition). `.npmrc` is deliberately not checked.
+
+**Belt.** Set `NODE_VERSION=22` in the Pages panel too. That is what vant relies on, and it makes the build independent of the file.
+
+**Local build is healthy** - the failure was never the code: `npm ci` clean, `prestruct build` -> `8/8 pages rendered`, `audit: 0 failures`.
 
 ---
 
