@@ -63,7 +63,6 @@ jobs:
           git config user.name "openhands"
           git config user.email "openhands@all-hands.dev"
           git add docs/_data/projects.json
-          git commit -m "chore: refresh the project roster (scheduled fetch)
-
-Co-authored-by: openhands <openhands@all-hands.dev>"
+          git commit -m "chore: refresh the project roster (scheduled fetch)" \
+                     -m "Co-authored-by: openhands <openhands@all-hands.dev>"
           git push
