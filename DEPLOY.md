@@ -15,9 +15,18 @@ The caller's pins (the family shape): `ruby-version: '3.4'`, `freestruct-version
 The repo is the GitHub user site, so `dhaupin.github.io` serves `docs.creadev.org` from `main` via the CNAME. The Pages build is currently the **legacy builder** at the repo root (`build_type: legacy`, source `main:/`, verified 2026-11-17), which runs Jekyll over the whole tree. The docs half moves to the family docs lane so the build scopes to `docs/` and gains the freestruct post-build layer plus pagefind:
 
 1. Add the docs lane caller (`.github/workflows/docs-deploy.yml`).
-2. In the repo's Pages settings, switch the build source from the legacy builder to **GitHub Actions**.
+2. In the repo's Pages settings, switch the build source from the legacy builder to **GitHub Actions** (Settings -> Pages -> Build and deployment -> Source: GitHub Actions).
 3. Keep the `CNAME` file at the repo root so the custom domain stays `docs.creadev.org`.
 4. Confirm the `url`/`baseurl` in `docs/_config.yml`: `url: https://docs.creadev.org`, `baseurl:` empty (the hub is the root, not a subpath).
+
+**Step 2 is mandatory, and skipping it fails quietly.** Verified 2026-11-19: with `build_type: legacy` still set, `pages-build-deployment` keeps running on every `main` push and deploys **after** the lane (measured: lane 21:56:36, legacy 21:58:15), so the legacy output overwrites the correct artifact. The legacy builder runs Jekyll over the repo root, which has no `_config.yml` and no `_layouts/` - both live in `docs/` - so it falls back to `jekyll-theme-primer`. Primer supplies a `default` layout but no `landing` layout, so `/` (which asks for `landing`) ships a bare `<div>` fragment with no `<head>` and no CSS, while `/projs/` and `/search/` ship Primer chrome with none of the brand tokens. Check it with:
+
+```bash
+curl -s https://docs.creadev.org/ | head -3          # expect <!DOCTYPE html>, not <div class="lp">
+curl -s https://docs.creadev.org/projs/ | grep -c 'data-theme'   # expect >0, not 0
+```
+
+The lane itself is fine: its uploaded artifact is correct every time. This is a deploy-target mismatch, not a build bug. After flipping the setting, re-run `Deploy Docs` (`workflow_dispatch`) to land the good artifact.
 
 The GitHub Pages build and the Cloudflare Pages build are independent hosts: GitHub Pages reads `docs/`, Cloudflare Pages reads `web/`, and neither sees the other's half. There is no conflict between them.
 

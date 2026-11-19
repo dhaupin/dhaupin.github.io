@@ -176,4 +176,29 @@ The owner chose the family staging flow: push to `staging` first so Cloudflare P
 
 ---
 
+### 2026-11-19 - docs.creadev.org renders unstyled: the legacy builder is still the Pages source
+
+The owner reported no theme at `https://docs.creadev.org/`. Root cause found and proven; the fix is a repo setting the token cannot change (403 `Resource not accessible by integration`).
+
+**Symptom.** `/` serves a bare `<div class="lp">` fragment: no `<!DOCTYPE>`, no `<head>`, no `<style>`, 2657 bytes. `/projs/` and `/search/` serve GitHub's **Primer** theme (`Jekyll v3.10.0`, `/assets/css/style.css`), carrying **0** of our brand tokens (`data-theme`, `--accent`) where the lane's artifact carries **12**.
+
+**Cause.** `GET /repos/.../pages` reports `build_type: legacy`, `source: {branch: main, path: /}`. The legacy builder runs Jekyll over the **repo root**, where there is no `_config.yml` and no `_layouts/` (they live in `docs/`). It therefore falls back to `jekyll-theme-primer`, which supplies a `default` layout but no `landing` layout:
+
+| Page | `layout:` | Legacy result |
+| --- | --- | --- |
+| `/` | `landing` | no such layout anywhere -> bare fragment |
+| `/projs/`, `/search/` | `default` | Primer's default -> wrong chrome |
+
+**Proof (byte-for-byte).** Built the three `docs/*.md` in an empty dir with no `_layouts` (a faithful root-build sim). Jekyll warns `Layout 'landing' requested in index.md does not exist` and emits **2657 bytes, byte-identical to live**.
+
+**Why the lane's correct deploy did not win.** Both paths deploy on a `main` push: `Deploy Docs` (uploads the correct artifact) and `pages-build-deployment` (the legacy builder). Timeline: lane deploy ~21:56:36, legacy deploy **21:58:15** - last writer wins, and the legacy one overwrote it.
+
+**The lane is not at fault.** Downloaded artifact `github-pages` (305781 bytes) from run 44623672543: `index.html` is 30810 bytes with `<!DOCTYPE>`, `<head>`, 8 `data-theme` hits, correct `<title>`, plus `pagefind/`, `404.html`, `feed.xml`, `robots.txt`, `redirects.json`. `/projs/index.html` likewise correct. The docs half builds right; only the deploy target is wrong.
+
+**Fix (owner, one setting).** Settings -> Pages -> Build and deployment -> Source: **GitHub Actions** (i.e. `build_type: workflow`). Then re-run the `Deploy Docs` workflow (`workflow_dispatch`) so the good artifact lands, and the legacy `pages-build-deployment` runs stop. `DEPLOY.md` section 1 already documented this step; it was simply never applied.
+
+**Why this was invisible to the gates.** Jekyll treats a missing layout as a *warning*, not an error, and the lane never runs the legacy builder, so `test.yml` and the local battery both stay green while production serves the wrong thing. There is no layout-existence gate in coreforge today; a `layout:` -> `docs/_layouts/<name>.html` check is the natural addition (upstream, coreforge).
+
+---
+
 
