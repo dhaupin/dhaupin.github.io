@@ -24,6 +24,7 @@ Adopted the family staging flow: push to `staging` first for a Cloudflare Pages 
 ### Fixed
 
 - **`refresh-projects.yml` was unparseable** - the commit step's co-author line sat inside a YAML block scalar, so `Co-authored-by` parsed as a top-level workflow key and GitHub refused the file (0s runs, zero jobs, run titled by file path). Now uses the family's `-m` continuation form.
+- **`web/.nvmrc` broke the Cloudflare Pages build** - the CF image feeds the whole file to asdf as the version string, so a comment block made it `nodejs@22\n# ...` and `node-build` answered `definition not found: 22`. Both `.nvmrc` files are now a bare `22`. New gate `scripts/check-nvmrc.mjs` (in `npm run check`) keeps it that way. See `labs/TASKS.md`.
 
 ### 2026-11-17 - the Cloudflare Pages first-build pass (root `web`, node/npm pins, the CSP)
 

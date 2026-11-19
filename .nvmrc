@@ -1,6 +1,1 @@
 22
-# Node.js version for this repo's own tooling: the sync script, the docs
-# gates, and CI (test.yml pins node 22).
-#
-# The portfolio's Cloudflare Pages build reads web/.nvmrc instead, because
-# its root directory is web/ (DEPLOY.md section 2). Both say 22.

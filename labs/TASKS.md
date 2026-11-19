@@ -201,4 +201,30 @@ The owner reported no theme at `https://docs.creadev.org/`. Root cause found and
 
 ---
 
+### 2026-11-19 - the first Cloudflare Pages build died on web/.nvmrc
+
+Owner flipped Pages to GitHub Actions and docs rendered. The first CF Pages build then failed in ~8s, before `npm` ever ran:
+
+```
+Detected the following tools from environment: nodejs@22
+# Node.js version for the portfolio's Cloudflare Pages build.
+#
+# The Pages project's root directory is web/ ...
+, npm@10.9.9
+...
+node-build: definition not found: 22
+```
+
+**Cause.** The CF build image feeds the **whole file** to asdf as the version string. `web/.nvmrc` held `22` on line 1 followed by a 12-line comment block, so asdf asked `node-build` for a version literally named `22\n# Node.js version...` -> `definition not found: 22`. The build aborts at tool setup, so the failure has nothing to do with our code.
+
+**The earlier lesson was wrong.** The comment block claimed "the version line stays FIRST: a comments-first .nvmrc is not something every builder parser survives" - implying order mattered. It does not: the file is read whole, so *any* comment breaks it regardless of position. vant did not actually survive this by reordering; vant sets `NODE_VERSION=22` in the Pages panel, which bypasses the file entirely.
+
+**Fix.** Both `.nvmrc` files are now a bare `22` and nothing else. `.npmrc` keeps its comments - npm parses it as INI, where `#` is a real comment; the two files have different contracts.
+
+**Gate (rule 9 - second catch family-wide, so it becomes a gate).** `scripts/check-nvmrc.mjs`, wired into `npm run lint:gates` (and so into `npm run check` and CI): every `.nvmrc` must hold exactly one bare version, no comments, no extra lines. Verified it passes on the fixed files and exits 1 on the old comments-first content. `.npmrc` is deliberately not checked.
+
+**Belt.** Set `NODE_VERSION=22` in the Pages panel as well. That is what vant relies on, and it makes the build independent of the file.
+
+---
+
 

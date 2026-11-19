@@ -45,15 +45,15 @@ The Pages project contract (the family shape):
 | Root directory | `web` |
 | Build command | `npm run build` (runs `prestruct build`) |
 | Output directory | `dist` |
-| Node version | 22 (the panel may also read `web/.nvmrc`, which says `22`) |
+| Node version | 22 - set `NODE_VERSION=22` in the panel (belt) **and** keep `web/.nvmrc` a bare `22` (braces). Do not put comments in the file. |
 | Production domain | `dhaupin.creadev.org` |
 
 The build prerenders every route into `web/dist/<route>/index.html`; healthy is the last line reading `N/N pages rendered` with N equal to the route count.
 
 Because the root directory is `web/`, the Pages builder reads the config files **inside `web/`**, not the repo root's - the same reason vant mirrors its `.npmrc` into each Pages root. Two such files ride the tree:
 
-- **`web/.nvmrc`** pins Node 22 (version line first). The CF v3 build image defaults to Node 22.23.4, which is already fine, but the family pins it explicitly: a builder has silently installed an EOL Node (vant, pass 338) and tripped `npm EBADENGINE`. The repo root `.nvmrc` says 22 too, for local tooling and CI.
-- **`web/.npmrc`** sets `legacy-peer-deps=true`. The CF v3 image ships npm 10.9.9, and `vite` 8 declares an optional `@vitejs/devtools` peer - the shape behind the npm 10.x arborist crash (npm/cli#9787). A complete lockfile makes `npm ci` a no-op for the flag, but if the builder is ever forced to re-resolve (a stale lock), the flag turns the crash into a clean install. The repo root graph carries no such peer shape, so it needs no `.npmrc`.
+- **`web/.nvmrc`** pins Node 22. It contains a bare version and nothing else - **no comments, ever**. The CF build image feeds the whole file to asdf as the version string, so any comment turns it into `nodejs@22\n# ...`, which `node-build` reports as `definition not found: 22` and the build dies before `npm` runs. Verified 2026-11-19: a comments-first file failed the real Pages build exactly this way (the log echoed the comment block into the detected-tools line). The root `.nvmrc` is bare for the same reason. Keep the rationale here in DEPLOY.md, not in the file. Belt: set `NODE_VERSION=22` in the Pages panel too, which bypasses the file entirely - that is what vant actually relies on.
+- **`web/.npmrc`** sets `legacy-peer-deps=true`. The CF v3 image ships npm 10.9.9, and `vite` 8 declares an optional `@vitejs/devtools` peer - the shape behind the npm 10.x arborist crash (npm/cli#9787). A complete lockfile makes `npm ci` a no-op for the flag, but if the builder is ever forced to re-resolve (a stale lock), the flag turns the crash into a clean install. Comments are safe here: npm parses `.npmrc` as INI, so `#` lines are real comments. The repo root graph carries no such peer shape, so it needs no `.npmrc`.
 
 - **Do not add a `/* /index.html 200` SPA fallback.** `web/public/_redirects` explains why: every route prerenders its own HTML, and the fallback redirect-loops against CF's pretty URLs.
 - **The security headers ship in the tree.** `web/public/_headers` carries the CSP, HSTS, `X-Frame-Options`, and immutable `/assets/*` caching. Tighten the CSP directives to match the portfolio's actual asset sources (fonts, any third-party fetch targets).
