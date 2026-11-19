@@ -162,6 +162,18 @@ The owner chose the family staging flow: push to `staging` first so Cloudflare P
 
 - **Receipts:** the copied workflow parses under the birth gate and carries no `uses:`, so it adds no floating pin; the full battery stays green (`sync:check`, the three docs gates, language, brand-census, theme-parity, prestruct pins, birth gate, action pins).
 
+- **Landed, and the flow proved itself on the first landing.** `staging` pushed first (preview lane), then `main` promoted. On staging: `test` PASS, `Deploy Docs` build PASS with `docs / deploy` **skipped** - the main-gate inside the lane works as read. On main: `test` PASS, `Deploy Docs` build + deploy both PASS, and `Sync staging to main` PASS in 8s, fast-forwarding `staging` back to `main` (both refs at `4860208`). Live: `docs.creadev.org/` 200 (title "The front door to the family docs | creadev docs"), `/projs/` 200, `/search/` 200.
+
+- **A real pre-existing bug surfaced on the first staging push (fixed here).** `refresh-projects.yml` had its commit step's co-author line inside a YAML block scalar:
+  ```yaml
+  git commit -m "chore: refresh the project roster (scheduled fetch)
+
+  Co-authored-by: openhands <openhands@all-hands.dev>"
+  ```
+  The blank line plus the unindented `Co-authored-by:` line terminates the block scalar, so `Co-authored-by` parsed as a **top-level workflow key** and GitHub refused the file. Its run was titled `.github/workflows/refresh-projects.yml` (the fallback name for an unnamed/unparseable workflow) and died in **0s with zero jobs** - the signature of a file GitHub will not validate. The birth gate passed because js-yaml accepts it (it just adds a stray key). Fixed with the family's `-m` continuation form (the pattern in gistory's stone-ferry/tasks-insert). After the fix all four workflows register under their real names (`Refresh projects`, `Sync staging to main` both appeared in the Actions list for the first time).
+
+- **The 0-second/no-jobs run is the diagnostic to remember:** a workflow run whose title is the file PATH rather than the `name:` value never parsed. Do not debug the steps - read the YAML.
+
 ---
 
 

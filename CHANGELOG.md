@@ -21,6 +21,10 @@ Adopted the family staging flow: push to `staging` first for a Cloudflare Pages 
 - **`DEPLOY.md`** - section 4 rewritten from "if adopted" to "adopted" (flow, ff-sync rationale, the branch-protection owner step).
 - **`AGENTS.md`** - house rule 11 records the branch flow.
 
+### Fixed
+
+- **`refresh-projects.yml` was unparseable** - the commit step's co-author line sat inside a YAML block scalar, so `Co-authored-by` parsed as a top-level workflow key and GitHub refused the file (0s runs, zero jobs, run titled by file path). Now uses the family's `-m` continuation form.
+
 ### 2026-11-17 - the Cloudflare Pages first-build pass (root `web`, node/npm pins, the CSP)
 
 The Cloudflare Pages project's root directory is `web`, so the builder reads the config files inside `web/`, not the repo root's. Two files now ride there, plus a CSP correction, so the first build succeeds without a manual panel workaround.
