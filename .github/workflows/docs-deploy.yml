@@ -20,7 +20,10 @@ name: Deploy Docs
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
+    # staging is the permanent integration branch: it builds and validates the
+    # docs here, but the lane's deploy job is gated to main (inside the
+    # reusable workflow), so a staging push never publishes.
     # The docs identity (docs/_config.yml, docs/freestruct.config.yml, CNAME)
     # is GENERATED from site.config.js, so an identity-only edit is a real
     # docs change: name the identity file and the sync entrypoint or the

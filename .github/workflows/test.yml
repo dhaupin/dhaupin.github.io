@@ -4,15 +4,19 @@
 # (sync:check), the docs gates (frontmatter, links, style), the language gate,
 # the action-pin guard, the portfolio build (prestruct prerender), and a full
 # Jekyll build so a broken layout or Liquid filter red-lights here instead of
-# in the deploy lane. The docs deploy lane (docs-deploy.yml) runs on main pushes
-# only; the portfolio half deploys from Cloudflare Pages' own Git integration,
-# so this is the PR coverage for both halves.
+# in the deploy lane. The battery runs on main AND on the permanent staging
+# integration branch, so a red gate red-lights staging before promotion. The
+# docs deploy lane (docs-deploy.yml) also triggers on both, but its deploy job
+# is gated to main inside the reusable lane - staging builds and validates,
+# and never deploys. The portfolio half deploys from Cloudflare Pages' own Git
+# integration (which is why staging gives you a preview URL), so this is the
+# PR coverage for both halves.
 
 name: test
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
 
 permissions:

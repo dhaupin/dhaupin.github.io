@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 2026-11-17 - the staging flow (preview branch, ff-sync, CI coverage)
+
+Adopted the family staging flow: push to `staging` first for a Cloudflare Pages preview, then promote to `main`.
+
+### Added
+
+- **`.github/workflows/staging-ff-sync.yml`** - byte-identical to the family's (packstruct, prestruct, gistory, monoforge). Fast-forwards `staging` to `main` after every promotion, refuses a non-fast-forward, and recreates `staging` if a `--delete-branch` merge removes it.
+
+### Changed
+
+- **`test.yml`** - triggers on `push: [main, staging]` so a red battery blocks promotion; header comment corrected.
+- **`docs-deploy.yml`** - triggers on `push: [main, staging]`; the lane's deploy job is gated to `main` inside the reusable workflow, so staging validates and never publishes.
+- **`DEPLOY.md`** - section 4 rewritten from "if adopted" to "adopted" (flow, ff-sync rationale, the branch-protection owner step).
+- **`AGENTS.md`** - house rule 11 records the branch flow.
+
 ### 2026-11-17 - the Cloudflare Pages first-build pass (root `web`, node/npm pins, the CSP)
 
 The Cloudflare Pages project's root directory is `web`, so the builder reads the config files inside `web/`, not the repo root's. Two files now ride there, plus a CSP correction, so the first build succeeds without a manual panel workaround.

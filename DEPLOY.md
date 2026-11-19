@@ -57,19 +57,34 @@ The two hosts build from the same repo but never read each other's half:
 - The docs lane's `paths` filter names `docs/**` (and the identity file), so a `web/**` edit never triggers a docs deploy.
 - The Cloudflare Pages project builds only `web/`, so a `docs/**` edit produces an identical `web/dist` and a no-op deploy.
 
-A change to the identity file (`site.config.js`) is a change to both halves' derived surfaces, so it is the one edit that legitimately touches both. If the family staging flow is adopted here, the docs lane caller's `paths` should name `site.config.js` too.
+A change to the identity file (`site.config.js`) is a change to both halves' derived surfaces, so it is the one edit that legitimately touches both. The docs lane caller's `paths` names `site.config.js` for exactly that reason (section 4).
 
-## 4. The staging branch (if adopted)
+## 4. The staging branch (adopted)
 
-The family runs a **permanent `staging` integration branch**: work branches off it, PRs target it, and promotion to `main` is the only path out. This repo has not adopted it yet (open question in `labs/prd.md` section 10). The pattern, if adopted:
+The repo runs the family's **permanent `staging` integration branch**: work branches off it, PRs target it, and promotion to `main` is the only path out. It is adopted here for one concrete reason: Cloudflare Pages builds **every branch** through its Git integration, so a push to `staging` produces a preview deployment of the portfolio at a stable staging URL before anything reaches `main` and the production domain.
 
-1. **CI covers staging as well as main**, so a red battery red-lights the integration branch before promotion.
-2. **Any deploy job is gated to `main`.** The docs lane's deploy job already carries this guard inside the reusable workflow, so a caller inherits it.
-3. **After every promotion, fast-forward staging to main:**
-   ```bash
-   git push origin origin/main:staging     # ff, non-destructive
-   ```
-   A merge-commit promotion puts a commit on `main` that `staging` lacks, so the two drift by one on every promotion even when the flow is followed exactly. The sync is a required step, not a repair.
+1. **CI covers staging as well as main.** `test.yml` triggers on `push: [main, staging]`, so a red battery red-lights the integration branch before promotion. `docs-deploy.yml` triggers on both too, but its deploy job is gated to `main` **inside** the reusable lane (`if: github.ref == 'refs/heads/main'`), so a staging push builds and validates the docs and never publishes them.
+2. **Promotion is a merge, and the sync is automatic.** `staging-ff-sync.yml` runs on every `main` push and fast-forwards `staging` to `main` (`git push origin origin/main:staging`). A merge-commit promotion puts a commit on `main` that `staging` lacks, so the two drift by one on every promotion even when the flow is followed exactly. The sync is a required step, not a repair.
+3. **The sync is non-destructive and self-healing.** The refspec is fast-forward-only, so if `staging` ever holds a commit `main` does not have, the push is refused and the job fails loudly rather than rewriting history. The same workflow also listens for `delete` and recreates `staging` at `main` - because `gh pr merge --delete-branch` on a promote PR deletes the PR's head, and the head *is* `staging`.
+
+The one step the repo cannot do for itself: **restrict deletion of `staging`** (a ruleset or branch protection) so the permanent branch cannot be removed by accident. The workflow is the belt; that setting is the suspender.
+
+Day to day:
+
+```bash
+git switch staging && git pull --ff-only
+git switch -c feat/whatever          # work branches off staging
+# ...commit...
+gh pr create --base staging          # PRs target staging
+# promotion: PR staging -> main, merge, and the sync workflow fast-forwards staging back
+```
+
+To push a batch that is already committed locally (the first landing, for example), push staging first so the preview builds, then promote:
+
+```bash
+git push origin main:staging   # the preview build
+git push origin main           # the promotion; staging-ff-sync re-mirrors staging
+```
 
 ## 5. Local checks before any push
 

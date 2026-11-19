@@ -37,6 +37,7 @@ CNAME                 docs.creadev.org (the GitHub Pages custom domain)
 8. **The log is the memory.** Every session appends its receipts to [`labs/TASKS.md`](./labs/TASKS.md); versioned changes also get a [`CHANGELOG.md`](./CHANGELOG.md) entry in the same commit. The next agent should never have to guess what happened.
 9. **Gates fail at cause.** A lint names file:line. When a bug is caught twice, it becomes a gate the same day, never a memory.
 10. **Generated green is never shipped.** A placeholder or a stale derived file is a failure, not a warning.
+11. **`staging` is the integration branch.** Work branches off `staging`, PRs target `staging`, and promotion to `main` is the only path out. CI (`test.yml`, `docs-deploy.yml`) runs on both; the docs deploy job is gated to `main` inside the reusable lane, so staging validates and never publishes. `staging-ff-sync.yml` fast-forwards `staging` to `main` after every promotion (and recreates it if deleted) - never merge `main` into `staging`, never force-push it. Cloudflare Pages builds every branch, so a `staging` push is the portfolio preview. See [`DEPLOY.md`](./DEPLOY.md) section 4.
 
 ## The two hosts (who builds what)
 

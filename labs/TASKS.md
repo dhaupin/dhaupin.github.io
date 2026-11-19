@@ -146,3 +146,22 @@ The owner asked to set the CF Pages app dir (root directory) to `/web` and to ru
 
 ---
 
+### 2026-11-17 - the staging flow is adopted (the preview branch, the ff-sync, the CI coverage)
+
+The owner chose the family staging flow: push to `staging` first so Cloudflare Pages builds a preview, then promote to `main`. CF Pages builds every branch through the Git integration, so `staging` is the preview lane for the portfolio; the docs lane validates on staging but its deploy job is gated to `main` inside the reusable workflow.
+
+- **`.github/workflows/staging-ff-sync.yml` (new, byte-identical to the family).** Copied verbatim from the four family repos that carry it (packstruct, prestruct, gistory, monoforge all hash to `30d6896`). It fast-forwards `staging` to `main` on every `main` push, refuses a non-fast-forward (so a divergent staging fails loudly instead of being rewritten), and recreates `staging` at `main` on a `delete` event - the `gh pr merge --delete-branch` trap, where a promote PR's head *is* `staging`.
+
+- **`test.yml`** now triggers on `push: [main, staging]`, so a red battery red-lights the integration branch before promotion. Its header comment was corrected (it claimed the docs lane runs "on main pushes only").
+
+- **`docs-deploy.yml`** now triggers on `push: [main, staging]`. This is safe because the lane's deploy job carries `if: github.ref == 'refs/heads/main'` (read in freestruct v1.4.1's `docs-lane.yml`, not assumed): a staging push builds and validates the docs, then skips the deploy. Verified against the pinned lane SHA, so the guard is the one this repo actually runs.
+
+- **Docs.** `DEPLOY.md` section 4 is rewritten from "if adopted" to "adopted", with the day-to-day flow, the ff-sync rationale, and the one owner step the repo cannot do itself (restrict deletion of `staging` via a ruleset or branch protection - the workflow is the belt, the ruleset is the suspender). `AGENTS.md` gains house rule 11.
+
+- **Push order for the first landing** (the tree is 3 commits ahead of `origin/main`, which still holds only `CNAME` + `README.md`): `git push origin main:staging` first so the preview builds, then `git push origin main` to promote; the sync workflow then re-mirrors `staging`.
+
+- **Receipts:** the copied workflow parses under the birth gate and carries no `uses:`, so it adds no floating pin; the full battery stays green (`sync:check`, the three docs gates, language, brand-census, theme-parity, prestruct pins, birth gate, action pins).
+
+---
+
+
