@@ -34,7 +34,7 @@ export default function Nav() {
       <nav className="nav">
         <div className="wrap nav-inner">
           <Link to="/" className="brand" onClick={() => setOpen(false)}>
-            <img src="/icon.svg" alt="" className="brand-logo" aria-hidden="true" />
+            <img src="/dhaupin-avatar.jpeg" alt="" className="brand-logo" aria-hidden="true" />
             <span className="brand-accent">{site.wordmark.accent}</span>{site.wordmark.rest}
             {site.badge && <span className="brand-badge">{site.badge}</span>}
           </Link>

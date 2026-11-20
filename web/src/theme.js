@@ -14,10 +14,18 @@ import config from '../../site.config.js'
 export const THEME_KEY = config.theme.themeKey
 export const SCHEME_KEY = config.theme.schemeKey
 
-// The shipped presets. Petrol is the default and carries no CSS block (it IS
-// the base tokens); the portfolio keeps the family palette and lets the art
-// carry the wildness.
+// The shipped presets. Petrol is the block-less base tokens and stays first
+// (the theme-parity gate keys the default off SCHEMES[0]); the portfolio keeps
+// the family palette and lets the art carry the wildness.
 export const SCHEMES = ['petrol', 'golden', 'jade']
+
+// The scheme a first visit lands on. This is the portfolio's choice (docs
+// keeps the shared petrol), so it reads the portfolio block. It is applied
+// only when nothing is persisted, and it never changes the token structure -
+// jade is a preset on top of the base.
+export const DEFAULT_SCHEME = SCHEMES.includes(config.portfolio.defaultScheme)
+  ? config.portfolio.defaultScheme
+  : SCHEMES[0]
 
 // Each scheme's paper value per half - the one place a scheme touches the
 // browser chrome (the theme-color meta / mobile URL bar).

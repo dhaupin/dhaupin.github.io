@@ -67,8 +67,11 @@ Because the Pages root directory is `web/`, the builder reads `web/.nvmrc` (Node
 npm run sync && npm run sync:check     # --check refuses drift (a hand edit is a failure)
 
 # docs half (Ruby + Jekyll). Ruby is installed system-wide on this box.
-cd docs && bundle config set --local path vendor/bundle && bundle install
-cd docs && bundle exec jekyll build          # renders docs/_site
+# Install gems OUTSIDE docs/: the docs gates walk the filesystem (they skip
+# only _data/_layouts/_freestruct, not vendor/), so an in-tree bundle feeds gem
+# READMEs and CHANGELOGs to FRONTMATTER/LINKS/STYLE as if they were site pages.
+bundle config set --global path /workspace/.gems && (cd docs && bundle install)
+cd docs && bundle exec jekyll build --destination /tmp/docs-out   # never build into docs/_site
 
 # the post-build layer over the rendered docs (needs node)
 node node_modules/freestruct/bin/freestruct.mjs
@@ -78,6 +81,12 @@ npm ci --prefix web && npm run build --prefix web   # "N/N pages rendered" is he
 
 # the portfolio art (icons + OG card), regenerated deterministically from the mark
 cd web && npm i --no-save @resvg/resvg-js dejavu-fonts-ttf && node scripts/make-art.mjs
+
+# refresh the projects roster + its mirrored captures (needs GITHUB_TOKEN).
+# Captures are vendored into docs/assets/img/projects and served same-origin:
+# creadev.org sends cross-origin-resource-policy: same-origin, so a cross-origin
+# <img> is blocked by the browser no matter what its CORS headers say.
+node scripts/fetch-projects.mjs --fetch-images   # regenerate + re-mirror
 
 # the whole battery: derived surfaces + docs gates + language + brand/theme/pin gates
 npm run check

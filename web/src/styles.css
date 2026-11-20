@@ -104,6 +104,14 @@ body {
 }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* Base anchor: prose links (project cards, body copy, list items) ride the
+   accent token. Without this they fall back to the UA default blue, which is
+   off-palette in every scheme and unreadable on the dark papers. Component
+   rules below (.nav-links a, .footer a, ...) override it where a quieter
+   treatment is wanted. */
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-deep); text-decoration: underline; }
+
 .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
 
 /* --- nav (app shell: fixed header + burger + one shared sidebar) --- */

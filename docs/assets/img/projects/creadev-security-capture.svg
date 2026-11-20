@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101010"/>
+      <stop offset="1" stop-color="#0a0a0a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="0.75" y="0.75" width="1278.5" height="718.5" fill="none" stroke="#a8c00026" stroke-width="1.5"/>
+  <g opacity="0.08">
+    <path d="M0 90H1280M0 180H1280M0 270H1280M0 360H1280M0 450H1280M0 540H1280M0 630H1280" stroke="#ffffff" stroke-width="1"/>
+    <path d="M128 0V720M256 0V720M384 0V720M512 0V720M640 0V720M768 0V720M896 0V720M1024 0V720M1152 0V720" stroke="#ffffff" stroke-width="1"/>
+  </g>
+  <text x="80" y="96" font-family="'DM Mono',monospace" font-size="26" letter-spacing="6" fill="#5c5a55">CREADEV SECURITY // @CREADEV.ORG/SECURITY</text>
+  <g font-family="'DM Mono',monospace" font-size="26">
+    <text x="80" y="190" fill="#9e9b94">$ npm install @creadev.org/security</text>
+    <text x="80" y="248" fill="#a8c000">✓ 0.3.1 installed</text>
+  </g>
+  <rect x="80" y="290" width="1120" height="250" rx="12" fill="#161616" stroke="#2a2a28" stroke-width="2"/>
+  <g font-family="'DM Mono',monospace" font-size="24">
+    <text x="120" y="352" fill="#4ade80">✓</text>
+    <text x="160" y="352" fill="#e8e5df">rate limit  - token buckets, per route</text>
+    <text x="120" y="412" fill="#4ade80">✓</text>
+    <text x="160" y="412" fill="#e8e5df">sanitize    - input scrubbed before state</text>
+    <text x="120" y="472" fill="#4ade80">✓</text>
+    <text x="160" y="472" fill="#e8e5df">waf         - hostile patterns refused at the door</text>
+    <text x="120" y="516" fill="#4ade80">✓</text>
+    <text x="160" y="516" fill="#e8e5df">validate    - schemas enforced on every boundary</text>
+  </g>
+  <g font-family="'DM Mono',monospace" font-size="24">
+    <text x="80" y="620" fill="#9e9b94">security</text>
+    <text x="210" y="620" fill="#9e9b94">rate-limit</text>
+    <text x="350" y="620" fill="#9e9b94">waf</text>
+    <text x="440" y="620" fill="#9e9b94">sanitization</text>
+    <text x="620" y="620" fill="#9e9b94">validation</text>
+  </g>
+  <text x="1200" y="660" font-family="'DM Mono',monospace" font-size="22" fill="#a8c000" text-anchor="end">creadev.org</text>
+</svg>

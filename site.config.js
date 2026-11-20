@@ -84,6 +84,9 @@ export default {
     themeKey: 'site-theme',
     schemeKey: 'site-paint-scheme',
     defaultMode: 'light',
+    // The shared/base default. Petrol is the block-less base tokens and
+    // SCHEMES[0] (the parity gate keys on that), so it stays the default for
+    // the docs half. The portfolio overrides it in its own block below.
     defaultScheme: 'petrol',
   },
 
@@ -142,7 +145,14 @@ export default {
   // The docs half never reads this block; the two brands stay separate.
   portfolio: {
     name: 'dhaupin',
-    wordmark: { accent: 'dhau', rest: 'pin' },
+    // One color, no split: the whole wordmark rides the accent token (the
+    // first color the split form used). An empty `rest` means the Nav renders
+    // a single .brand-accent span.
+    wordmark: { accent: 'dhaupin', rest: '' },
+    // The portfolio's default paint scheme (docs keeps the shared petrol).
+    // Jade is a preset, not the block-less base, so this changes only which
+    // preset a first visit lands on - never the token structure.
+    defaultScheme: 'jade',
     badge: '',
     tagline: 'I build web, app, ecom, enterprise, agent, and orchestration things.',
     description:
